@@ -1,0 +1,39 @@
+* {
+	background-color: lightblue;
+}
+
+.countries-container {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.countries-item {
+	/* display: flex; */
+	/* flex-direction: row; */
+	border: 1px solid black;
+	border-radius: 15px;
+	margin: 10px 5px;
+	/* width: 33%; */
+}
+
+h1,
+h2,
+h3 {
+	text-align: center;
+}
+
+img {
+	object-fit: contain;
+}
+
+#userInput {
+	display: block;
+	margin: 0 auto;
+	width: 35%;
+}
+
+.currency-data:hover {
+	cursor: pointer;
+}
