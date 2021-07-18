@@ -2,19 +2,18 @@
 // CHange the title
 // Make responsive
 
+// Countries where dollar is strongest - 
+// Countries where dollar is weakest - 
+
+// Sort strongest to weakest of hide/shown data
+
 // Variables
 const userInput = document.getElementById('userInput');
 const practiceButton = document.getElementById('convertButton');
+const sortingMethod = document.getElementById('sortingMethod');
+let countryData;
 let currencyData;
 
-userInput.addEventListener('keyup', (e) => {
-  const target = e.target;
-  const searchQuery = target.value;
-
-  gatherMatchedCountries(searchQuery);
-
-// Hide and Show accordingly - instead of making a ton of requests
-});
 
 // Functions
 // This gathers our country data from the 3rd party API on page load
@@ -22,9 +21,10 @@ const gatherAllCountries = () => {
   fetch('https://restcountries.eu/rest/v2/all')
   .then(res => res.json())
   .then(data => {
-
-      console.log(data);
-      generateDropdown(data);
+        countryData = data;
+        countryData = addUSConversion(countryData);
+        console.log(countryData);
+        generateDropdown(countryData);
   })
   .catch(err => console.log('Error: ', err));
 }
@@ -39,6 +39,7 @@ const gatherCurrencyData = () => {
   }
 
 // This gathers our country data that matched with the search query
+// I could instead filter all the data that I've collected instead of making call after call!
 const gatherMatchedCountries = (userInput) => {
   fetch(`https://restcountries.eu/rest/v2/name/${userInput}`)
   .then(res => res.json())
@@ -77,25 +78,26 @@ const generateDropdown = (data) => {
     currency.innerText = `Currency: ${country.currencies[0].name} (${country.currencies[0].symbol})`;
     currency.setAttribute('currency-code', country.currencies[0].code);
 
-
-    console.log('1: ', country.currencies[0].code);
-    const conversionData = calculateConversion(country.currencies[0].code);
-    console.log('converstionData : ', conversionData);
+    const conversionData = country.USDtoCODE;
 
     const status = document.createElement('h3');
+    const conversionTag = document.createElement('h3');
 
     if (conversionData >= 1) {
         // CODE belongs to a weak country
-        status.innerHTML = `Status: <span class="strong-country">Strong</span>`;
+        status.innerHTML = 'Status: <span class="strong-country">Strong</span>';
     } else {
         // CODE belongs to a strong country
         status.innerHTML = `Status: <span class="weak-country">Weak</span>`;
     }
 
+    conversionTag.innerHTML = `$1 USD = ${conversionData} ${country.currencies[0].symbol}`;
+
     innerDiv.appendChild(name);
     innerDiv.appendChild(flag);
     innerDiv.appendChild(currency);
     innerDiv.appendChild(status);
+    innerDiv.appendChild(conversionTag);
 
     outerDiv.appendChild(innerDiv);
   });
@@ -103,27 +105,62 @@ const generateDropdown = (data) => {
 }
 
 const calculateConversion = (currencyCode) => {
-    console.log(currencyCode);
-    console.log(currencyData);
     // 1 EUR => $x USD
     const EURtoUSD = currencyData['USD']; 
-    console.log(EURtoUSD);
 
     // 1 EUR => CODE's Currency
     const EURtoCODE = currencyData[currencyCode]; 
-    console.log(EURtoCODE);
 
     // $1USD => CODE's Currency
-    const USDtoCODE = EURtoCODE / EURtoUSD; 
-    console.log(EURtoCODE);
+    const USDtoCODE = Number((EURtoCODE / EURtoUSD).toFixed(2)) 
 
     return USDtoCODE;
+}
+
+const addUSConversion = (data) => {
+    // Loops through our country data and adds USConversion property
+    for (let i = 0; i < data.length; i++) {
+        data[i]['USDtoCODE'] = calculateConversion(data[i].currencies[0].code);
+    }
+    return data;
+}
+
+const sortArr = (data, val) => {
+    // Sort strongest to weakest
+    let newData = [...data];
+    newData = newData.filter(country => !Number.isNaN(country.USDtoCODE));
+
+    if (val === '1') {
+        newData.sort((a, b) => b.USDtoCODE - a.USDtoCODE);
+    }
+    // Sort weakest to strongest
+    if (val === '2') {
+        newData.sort((a, b) => a.USDtoCODE - b.USDtoCODE);
+    }
+
+    console.log('newData: ', newData);
+    return newData;
 }
 
 // Event Listeners
 // Display all countries on initial page load - I want them all rendered
 document.addEventListener('DOMContentLoaded', () => {
     gatherCurrencyData();
-    gatherAllCountries();
+    setTimeout(gatherAllCountries, 250);
 });
+
+sortingMethod.addEventListener('change', (e) => {
+    const val = e.target.value;
+    const newData = sortArr(countryData, val);
+    generateDropdown(newData);
+});
+
+userInput.addEventListener('keyup', (e) => {
+    const target = e.target;
+    const searchQuery = target.value;
+  
+    gatherMatchedCountries(searchQuery);
+  
+  // Hide and Show accordingly - instead of making a ton of requests
+  });
 

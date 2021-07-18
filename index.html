@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="styles.css">
   <!-- <link rel="stylesheet" href="font-awesome"> -->
   <!-- <link rel="stylesheet" href="google-fonts"> -->
-  <title>CREAM</title>
+  <title>Currency Converter</title>
 </head>
 <body>
-  <h1>American USD to Foreign Currency Converter</h1>
+  <h1>American USD to Foreign Currency</h1>
 
   <form action="">
     <input id="userInput" type="text" placeholder=" Enter country name..">
@@ -24,7 +24,11 @@
     <p>Travel where the dollar is strong relative to the country you're traveling to => MORE PURCHAING POWER!</p>
   </div>
 
-  <button id="convertButton">Convert Currency</button>
+  <select name="sortingMethod" id="sortingMethod">
+      <option value="" selected disabled hidden>Choose a Sorting Method</option>
+      <option value="1">Strongest to Weakest</option>
+      <option value="2">Weakest to Strongest</option>
+  </select>
 
   <div id="root"></div>
 
