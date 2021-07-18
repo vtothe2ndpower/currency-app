@@ -37,3 +37,22 @@ img {
 .currency-data:hover {
 	cursor: pointer;
 }
+
+.info-content {
+    display: block;
+    margin: 0 auto;
+    width: 65%;
+    line-height: 1.5rem;
+}
+
+.strong-country {
+    color: green
+}
+
+.weak-country {
+    color: red;
+}
+
+#root {
+    text-align: center;
+}
