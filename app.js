@@ -23,6 +23,7 @@ const gatherCurrencyData = () => {
     .then(res => res.json())
     .then(data => {
         currencyData = data.rates;
+        gatherAllCountries();
     })
     .catch(err => console.error('Error: ', err));
   }
@@ -166,10 +167,7 @@ const filterCountries = (searchQuery) => {
 
 // Event Listeners
 // Display all countries on initial page load - I want them all rendered
-document.addEventListener('DOMContentLoaded', () => {
-    gatherCurrencyData();
-    setTimeout(gatherAllCountries, 250);
-});
+document.addEventListener('DOMContentLoaded', gatherCurrencyData);
 
 sortingMethod.addEventListener('change', (e) => {
     const val = e.target.value;
