@@ -19,7 +19,7 @@ const gatherAllCountries = () => {
 }
 
 const gatherCurrencyData = () => {
-    fetch(`https://data.fixer.io/api/latest?access_key=${config.API_KEY}`)
+    fetch(`https://cors-anywhere.herokuapp.com/http://data.fixer.io/api/latest?access_key=${config.API_KEY}`)
     .then(res => res.json())
     .then(data => {
         currencyData = data.rates;
