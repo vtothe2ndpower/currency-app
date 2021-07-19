@@ -1,32 +1,21 @@
-// Check for what happens on 1-2-3-4-3-2-1 character string count
-// CHange the title
-// Make responsive
-
-// Countries where dollar is strongest - 
-// Countries where dollar is weakest - 
-
-// Sort strongest to weakest of hide/shown data
-
 // Variables
 const userInput = document.getElementById('userInput');
-const practiceButton = document.getElementById('convertButton');
 const sortingMethod = document.getElementById('sortingMethod');
+// Will hold our country data that is fetched
 let countryData;
+// Will hold our currecny data that is fetched
 let currencyData;
 
-
 // Functions
-// This gathers our country data from the 3rd party API on page load
 const gatherAllCountries = () => {
   fetch('https://restcountries.eu/rest/v2/all')
   .then(res => res.json())
   .then(data => {
         countryData = data;
         countryData = addUSConversion(countryData);
-        console.log(countryData);
         generateDropdown(countryData);
   })
-  .catch(err => console.log('Error: ', err));
+  .catch(err => console.error('Error: ', err));
 }
 
 const gatherCurrencyData = () => {
@@ -35,24 +24,8 @@ const gatherCurrencyData = () => {
     .then(data => {
         currencyData = data.rates;
     })
-    .catch(err => console.log('Error: ', err));
+    .catch(err => console.error('Error: ', err));
   }
-
-// This gathers our country data that matched with the search query
-// I could instead filter all the data that I've collected instead of making call after call!
-const gatherMatchedCountries = (userInput) => {
-  fetch(`https://restcountries.eu/rest/v2/name/${userInput}`)
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 404) {
-        // No matches found
-        document.getElementById('root').innerHTML = 'No Matches Found.';
-        return false;
-    }
-    generateDropdown(data);
-  })
-  .catch(err => console.log('Error: ', err));
-}
 
 const generateDropdown = (data) => {
   document.getElementById('root').innerHTML = '';
@@ -70,38 +43,40 @@ const generateDropdown = (data) => {
     
     const flag = document.createElement('img');
     flag.setAttribute('src', country.flag);
-    flag.setAttribute('width', 500);
-    flag.setAttribute('height', 300);
     
     const currency = document.createElement('h3');
-    currency.setAttribute('class', 'currency-data');
-    currency.innerText = `Currency: ${country.currencies[0].name} (${country.currencies[0].symbol})`;
-    currency.setAttribute('currency-code', country.currencies[0].code);
-
+    currency.innerHTML = `Currency: ${country.currencies[0].name} (${country.currencies[0].symbol})`;
+ 
     const conversionData = country.USDtoCODE;
-
     const status = document.createElement('h3');
-    const conversionTag = document.createElement('h3');
 
     if (conversionData >= 1) {
         // CODE belongs to a weak country
-        status.innerHTML = 'Status: <span class="strong-country">Strong</span>';
+        status.innerHTML = 'Status: <span class="strong-country" style="background-color: rgb(243, 243, 243);">Strong</span>';
     } else {
         // CODE belongs to a strong country
-        status.innerHTML = `Status: <span class="weak-country">Weak</span>`;
+        status.innerHTML = 'Status: <span class="weak-country" style="background-color: rgb(243, 243, 243);">Weak</span>';
     }
 
+    const conversionTag = document.createElement('h3');
     conversionTag.innerHTML = `$1 USD = ${conversionData} ${country.currencies[0].symbol}`;
+
+    const populationTag = document.createElement('h4');
+    populationTag.innerHTML = `Population Size: ${country.population}`;
 
     innerDiv.appendChild(name);
     innerDiv.appendChild(flag);
     innerDiv.appendChild(currency);
     innerDiv.appendChild(status);
     innerDiv.appendChild(conversionTag);
+    innerDiv.appendChild(populationTag);
 
     outerDiv.appendChild(innerDiv);
   });
   document.getElementById('root').appendChild(outerDiv);
+
+  const currentSearchQuery = userInput.value;
+  filterCountries(currentSearchQuery);
 }
 
 const calculateConversion = (currencyCode) => {
@@ -126,20 +101,67 @@ const addUSConversion = (data) => {
 }
 
 const sortArr = (data, val) => {
-    // Sort strongest to weakest
     let newData = [...data];
-    newData = newData.filter(country => !Number.isNaN(country.USDtoCODE));
 
+    if (val === '1' || val === '2') {
+        newData = newData.filter(country => !Number.isNaN(country.USDtoCODE));
+    }
+
+    if (val === '3' || val === '4') {
+        newData = newData.filter(country => Boolean(country.population));
+    }
+
+    // Sort strongest to weakest
     if (val === '1') {
         newData.sort((a, b) => b.USDtoCODE - a.USDtoCODE);
+        return newData;
     }
     // Sort weakest to strongest
     if (val === '2') {
         newData.sort((a, b) => a.USDtoCODE - b.USDtoCODE);
+        return newData;
     }
 
-    console.log('newData: ', newData);
-    return newData;
+    // Sort by largest to smallest population size
+    if (val === '3') {
+        newData.sort((a, b) => b.population - a.population);
+        return newData;
+    }
+
+    // Sort by smallest to largest population size
+    if (val === '4') {
+        newData.sort((a, b) => a.population - b.population);
+        return newData;
+    }
+
+    // Sort alphabetically: A-Z
+    if (val === '5') {
+        // Return original data array as is
+        return newData;
+    }
+    // Sort reverse alphabetically: Z-A
+    if (val === '6') {
+        return newData.reverse();
+    }
+}
+
+const filterCountries = (searchQuery) => { 
+    // Parent container that contains all country data
+    const container = document.querySelector('.countries-container');
+    // Individual countries nested within the parent container
+    const countries = container.querySelectorAll('.countries-item');
+
+    // Hide and Show countries accordingly instead of making multiple requests - loop through countries and filter matches
+    for (let i = 0; i < countries.length; i++) {
+        const countryName = countries[i].getElementsByClassName('countries-name')[0];
+  
+        // If search query matches with country name 
+        if (countryName.innerHTML.toLowerCase().indexOf(searchQuery) > -1) {
+            countries[i].style.display = '';
+        } else {
+            countries[i].style.display = 'none';
+        }
+    }
 }
 
 // Event Listeners
@@ -157,10 +179,7 @@ sortingMethod.addEventListener('change', (e) => {
 
 userInput.addEventListener('keyup', (e) => {
     const target = e.target;
-    const searchQuery = target.value;
-  
-    gatherMatchedCountries(searchQuery);
-  
-  // Hide and Show accordingly - instead of making a ton of requests
-  });
-
+    // Get value of input - make lower case for easier comparisons
+    const searchQuery = target.value.toLowerCase();
+    filterCountries(searchQuery);
+});
