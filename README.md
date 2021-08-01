@@ -1,6 +1,6 @@
 # Currency Converter Application
 
-## Users can see how the the US dollar stacks up against the currencies of the other countries of the world in real-time.
+## Users can see how the the US dollar stacks up against the currencies of the other countries of the world in real-time!
 
 ### Key Takeaways
 - The purpose of this project is to practice building something of practical utility with plain vanilla JavaScript (ES6+). 
