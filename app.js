@@ -8,25 +8,25 @@ let currencyData;
 
 // Functions
 const gatherAllCountries = () => {
-  fetch('https://restcountries.eu/rest/v2/all')
+  fetch('https://api.countrylayer.com/v2/all?access_key=f09f20bf02c70fa7032e3ddec841e0d1')
   .then(res => res.json())
   .then(data => {
-        countryData = data;
-        countryData = addUSConversion(countryData);
-        generateDropdown(countryData);
+    countryData = data;
+    countryData = addUSConversion(countryData);
+    generateDropdown(countryData);
   })
   .catch(err => console.error('Error: ', err));
 }
 
 const gatherCurrencyData = () => {
-    fetch(`https://data.fixer.io/api/latest?access_key=${config.API_KEY}`)
-    .then(res => res.json())
-    .then(data => {
-        currencyData = data.rates;
-        gatherAllCountries();
-    })
-    .catch(err => console.error('Error: ', err));
-  }
+  fetch(`https://data.fixer.io/api/latest?access_key=${config.API_KEY}`)
+  .then(res => res.json())
+  .then(data => {
+    currencyData = data.rates;
+    gatherAllCountries();
+  })
+  .catch(err => console.error('Error: ', err));
+}
 
 const generateDropdown = (data) => {
   document.getElementById('root').innerHTML = '';
@@ -43,7 +43,7 @@ const generateDropdown = (data) => {
     name.innerText = country.name
     
     const flag = document.createElement('img');
-    flag.setAttribute('src', country.flag);
+    flag.setAttribute('src', `https://www.countryflags.io/${country.alpha2Code}/shiny/64.png`);
     
     const currency = document.createElement('h3');
     currency.innerHTML = `Currency: ${country.currencies[0].name} (${country.currencies[0].symbol})`;
@@ -52,11 +52,11 @@ const generateDropdown = (data) => {
     const status = document.createElement('h3');
 
     if (conversionData >= 1) {
-        // CODE belongs to a weak country
-        status.innerHTML = 'Status: <span class="strong-country" style="background-color: rgb(243, 243, 243);">Strong</span>';
+      // CODE belongs to a weak country
+      status.innerHTML = 'Status: <span class="strong-country" style="background-color: rgb(243, 243, 243);">Strong</span>';
     } else {
-        // CODE belongs to a strong country
-        status.innerHTML = 'Status: <span class="weak-country" style="background-color: rgb(243, 243, 243);">Weak</span>';
+      // CODE belongs to a strong country
+      status.innerHTML = 'Status: <span class="weak-country" style="background-color: rgb(243, 243, 243);">Weak</span>';
     }
 
     const conversionTag = document.createElement('h3');
@@ -81,88 +81,88 @@ const generateDropdown = (data) => {
 }
 
 const calculateConversion = (currencyCode) => {
-    // 1 EUR => $x USD
-    const EURtoUSD = currencyData['USD']; 
+  // 1 EUR => $x USD
+  const EURtoUSD = currencyData['USD']; 
 
-    // 1 EUR => CODE's Currency
-    const EURtoCODE = currencyData[currencyCode]; 
+  // 1 EUR => CODE's Currency
+  const EURtoCODE = currencyData[currencyCode]; 
 
-    // $1USD => CODE's Currency
-    const USDtoCODE = Number((EURtoCODE / EURtoUSD).toFixed(2)) 
+  // $1USD => CODE's Currency
+  const USDtoCODE = Number((EURtoCODE / EURtoUSD).toFixed(2)) 
 
-    return USDtoCODE;
+  return USDtoCODE;
 }
 
 const addUSConversion = (data) => {
-    // Loops through our country data and adds USConversion property
-    for (let i = 0; i < data.length; i++) {
-        data[i]['USDtoCODE'] = calculateConversion(data[i].currencies[0].code);
-    }
-    return data;
+  // Loops through our country data and adds USConversion property
+  for (let i = 0; i < data.length; i++) {
+    data[i]['USDtoCODE'] = calculateConversion(data[i].currencies[0].code);
+  }
+  return data;
 }
 
 const sortArr = (data, val) => {
-    let newData = [...data];
+  let newData = [...data];
 
-    if (val === '1' || val === '2') {
-        newData = newData.filter(country => !Number.isNaN(country.USDtoCODE));
-    }
+  if (val === '1' || val === '2') {
+    newData = newData.filter(country => !Number.isNaN(country.USDtoCODE));
+  }
 
-    if (val === '3' || val === '4') {
-        newData = newData.filter(country => Boolean(country.population));
-    }
+  if (val === '3' || val === '4') {
+    newData = newData.filter(country => Boolean(country.population));
+  }
 
-    // Sort strongest to weakest
-    if (val === '1') {
-        newData.sort((a, b) => b.USDtoCODE - a.USDtoCODE);
-        return newData;
-    }
-    // Sort weakest to strongest
-    if (val === '2') {
-        newData.sort((a, b) => a.USDtoCODE - b.USDtoCODE);
-        return newData;
-    }
+  // Sort strongest to weakest
+  if (val === '1') {
+    newData.sort((a, b) => b.USDtoCODE - a.USDtoCODE);
+    return newData;
+  }
+  // Sort weakest to strongest
+  if (val === '2') {
+    newData.sort((a, b) => a.USDtoCODE - b.USDtoCODE);
+    return newData;
+  }
 
-    // Sort by largest to smallest population size
-    if (val === '3') {
-        newData.sort((a, b) => b.population - a.population);
-        return newData;
-    }
+  // Sort by largest to smallest population size
+  if (val === '3') {
+    newData.sort((a, b) => b.population - a.population);
+    return newData;
+  }
 
-    // Sort by smallest to largest population size
-    if (val === '4') {
-        newData.sort((a, b) => a.population - b.population);
-        return newData;
-    }
+  // Sort by smallest to largest population size
+  if (val === '4') {
+    newData.sort((a, b) => a.population - b.population);
+    return newData;
+  }
 
-    // Sort alphabetically: A-Z
-    if (val === '5') {
-        // Return original data array as is
-        return newData;
-    }
-    // Sort reverse alphabetically: Z-A
-    if (val === '6') {
-        return newData.reverse();
-    }
+  // Sort alphabetically: A-Z
+  if (val === '5') {
+    // Return original data array as is
+    return newData;
+  }
+  // Sort reverse alphabetically: Z-A
+  if (val === '6') {
+    return newData.reverse();
+  }
 }
 
 const filterCountries = (searchQuery) => { 
-    // Parent container that contains all country data
-    const container = document.querySelector('.countries-container');
-    // Individual countries nested within the parent container
-    const countries = container.querySelectorAll('.countries-item');
+  // Parent container that contains all country data
+  const container = document.querySelector('.countries-container');
+  // Individual countries nested within the parent container
+  const countries = container.querySelectorAll('.countries-item');
 
-    // Hide and Show countries accordingly instead of making multiple requests - loop through countries and filter matches
-    for (let i = 0; i < countries.length; i++) {
-        const countryName = countries[i].getElementsByClassName('countries-name')[0];
-  
-        // If search query matches with country name 
-        if (countryName.innerHTML.toLowerCase().indexOf(searchQuery) > -1) {
-            countries[i].style.display = '';
-        } else {
-            countries[i].style.display = 'none';
-        }
+  // Hide and Show countries accordingly instead of making multiple requests - loop through countries and filter matches
+  for (let i = 0; i < countries.length; i++) {
+    const countryName = countries[i].getElementsByClassName('countries-name')[0];
+
+    // If search query matches with country name 
+    if (countryName.innerHTML.toLowerCase().indexOf(searchQuery) > -1) {
+      countries[i].style.display = '';
+    } else {
+      countries[i].style.display = 'none';
     }
+  }
 }
 
 // Event Listeners
@@ -170,14 +170,14 @@ const filterCountries = (searchQuery) => {
 document.addEventListener('DOMContentLoaded', gatherCurrencyData);
 
 sortingMethod.addEventListener('change', (e) => {
-    const val = e.target.value;
-    const newData = sortArr(countryData, val);
-    generateDropdown(newData);
+  const val = e.target.value;
+  const newData = sortArr(countryData, val);
+  generateDropdown(newData);
 });
 
 userInput.addEventListener('keyup', (e) => {
-    const target = e.target;
-    // Get value of input - make lower case for easier comparisons
-    const searchQuery = target.value.toLowerCase();
-    filterCountries(searchQuery);
+  const target = e.target;
+  // Get value of input - make lower case for easier comparisons
+  const searchQuery = target.value.toLowerCase();
+  filterCountries(searchQuery);
 });
